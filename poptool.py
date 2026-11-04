@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from pathvalidate import sanitize_filename
 from time import sleep
 
@@ -14,8 +15,6 @@ REMOTE_URL = "https://node.goonhub.com/status?server="
 SERVERS = ["main1", "main3", "main4"]
 OUTPUT_PREFIX = "output"
 
-now_start = datetime.datetime.now(datetime.timezone.utc)
-
 def get_server_totals():
     total = 0
 
@@ -27,35 +26,26 @@ def get_server_totals():
     return total
 
 def write_server_totals(target_file):
+    now = datetime.datetime.now(timezone.utc)
+    total = get_server_totals()
+
     with open(target_file, "a", newline='') as output_file:
         output_writer = csv.writer(output_file)
-        output_writer.writerow([now_start.isoformat(), get_server_totals()])
+        output_writer.writerow([now.isoformat(), total])
+
+    print(now.isoformat() + ": " + str(total) + " players online.")
 
 def main():
-    output_filename = sanitize_filename(OUTPUT_PREFIX + "-" + now_start.isoformat() + ".csv")
+    output_filename = sanitize_filename(OUTPUT_PREFIX + "-" + datetime.datetime.now(timezone.utc).isoformat() + ".csv")
 
     with open(output_filename, "w", newline='') as output_file:
         output_writer = csv.writer(output_file)
         output_writer.writerow(["timestamp", "total"])
 
-    start_time = ((int(now_start.timestamp()) // DAY_SECONDS) + 1) * DAY_SECONDS
-    start_timestamp = datetime.datetime.fromtimestamp(start_time, datetime.timezone.utc)
-
-    stop_time = start_time + DAY_SECONDS
-    stop_timestamp = datetime.datetime.fromtimestamp(stop_time, datetime.timezone.utc)
-
-    print("Start time set to " + start_timestamp.isoformat() + ". Current time is " + now_start.isoformat() + ". Stoppping at " + stop_timestamp.isoformat() + ".")
+    schedule.every(SAMPLE_INTERVAL).minutes.do(write_server_totals, target_file = output_filename)
 
     while True:
-        if datetime.datetime.now(datetime.timezone.utc) >= start_timestamp:
-            while True:
-                schedule.every(SAMPLE_INTERVAL).minutes.do(write_server_totals(output_filename))
-                if datetime.datetime.now(datetime.timezone.utc) >= stop_timestamp:
-                    break
-            break
-        else:
-            sleep(100)
-
-    print("Execution finished, verify output at " + output_filename)
+        schedule.run_pending()
+        sleep(1)
 
 main()
