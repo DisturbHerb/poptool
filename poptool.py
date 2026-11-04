@@ -32,7 +32,7 @@ def write_server_totals(target_file):
         output_writer.writerow([now_start.isoformat(), get_server_totals()])
 
 def main():
-    output_filename = sanitize_filename(OUTPUT_PREFIX + "-" + str() + ".csv")
+    output_filename = sanitize_filename(OUTPUT_PREFIX + "-" + now_start.isoformat() + ".csv")
 
     with open(output_filename, "w", newline='') as output_file:
         output_writer = csv.writer(output_file)
