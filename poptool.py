@@ -8,7 +8,6 @@ import json
 import schedule
 import urllib.request
 
-DAY_SECONDS = 86400
 SAMPLE_INTERVAL = 15 # In minutes.
 
 REMOTE_URL = "https://node.goonhub.com/status?server="
