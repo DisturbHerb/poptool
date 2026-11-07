@@ -18,9 +18,12 @@ def get_server_totals():
     total = 0
 
     for server in SERVERS:
-        with urllib.request.urlopen((REMOTE_URL + server)) as url:
-            data = json.loads(url.read())['response']
-            total += int(data['players'])
+        try:
+            with urllib.request.urlopen((REMOTE_URL + server)) as url:
+                data = json.loads(url.read())['response']
+                total += int(data['players'])
+        except:
+            print(datetime.datetime.now(timezone.utc).isoformat() + ": Unable to get player count data for " + server)
 
     return total
 
